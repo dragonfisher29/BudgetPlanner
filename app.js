@@ -10,6 +10,7 @@ const fixedDate = document.getElementById('fixed-date');
 const flexSlider = document.getElementById('flex-slider');
 const flexManualInput = document.getElementById('flex-manual-input');
 const sliderMaxText = document.getElementById('slider-max-text');
+const savingsTargetInput = document.getElementById('savings-pct-input');
 
 const totalBudgetEl = document.getElementById('total-budget');
 const totalExpensesEl = document.getElementById('total-expenses');
@@ -62,6 +63,7 @@ function syncActiveProfilePointers() {
     
     flexSlider.value = activeState.flexibleSpending;
     flexManualInput.value = activeState.flexibleSpending > 0 ? activeState.flexibleSpending.toFixed(2) : "";
+    updateSavingsTargetInput();
     
     updateUI();
 }
@@ -82,6 +84,8 @@ function adjustSliderMaxCap() {
         flexSlider.value = maxCap;
         flexManualInput.value = maxCap > 0 ? maxCap.toFixed(2) : "";
     }
+
+    updateSavingsTargetInput();
 }
 
 function updateUI() {
@@ -102,6 +106,35 @@ function updateUI() {
 
     renderLedger();
     renderCharts(totalFixed, totalFlexible, netSavings);
+}
+
+savingsTargetInput.addEventListener('input', (e) => {
+    const targetPct = parseFloat(e.target.value) || 0;
+    const budgetAmount = parseFloat(activeState.monthlyBudget) || 0;
+    const totalFixed = activeState.fixedExpenses.reduce((sum, item) => sum + item.amount, 0);
+
+    const desiredSavings = Math.min(budgetAmount, (budgetAmount * targetPct) / 100);
+    const newFlexible = Math.max(0, budgetAmount - totalFixed - desiredSavings);
+
+    activeState.flexibleSpending = newFlexible;
+    flexSlider.value = newFlexible;
+    flexManualInput.value = newFlexible.toFixed(2);
+    saveAndSync();
+});
+
+function updateSavingsTargetInput() {
+    const budgetAmount = parseFloat(activeState.monthlyBudget) || 0;
+    const totalFixed = activeState.fixedExpenses.reduce((sum, item) => sum + item.amount, 0);
+    const totalFlexible = parseFloat(activeState.flexibleSpending) || 0;
+
+    if (budgetAmount <= 0) {
+        savingsTargetInput.value = '';
+        return;
+    }
+
+    const savingsValue = Math.max(0, budgetAmount - totalFixed - totalFlexible);
+    const savingsPct = (savingsValue / budgetAmount) * 100;
+    savingsTargetInput.value = savingsPct.toFixed(1);
 }
 
 // Feature 3: Sorted Data Ledger Array Rendering with Inline State Tracking Toggles
@@ -230,6 +263,7 @@ currencySelect.addEventListener('change', (e) => {
 monthlyBudgetInput.addEventListener('input', (e) => {
     activeState.monthlyBudget = parseFloat(e.target.value) || 0;
     adjustSliderMaxCap();
+    updateSavingsTargetInput();
     saveAndSync();
 });
 
@@ -237,6 +271,7 @@ flexSlider.addEventListener('input', (e) => {
     const val = parseFloat(e.target.value) || 0;
     activeState.flexibleSpending = val;
     flexManualInput.value = val.toFixed(2);
+    updateSavingsTargetInput();
     saveAndSync();
 });
 
@@ -246,6 +281,7 @@ flexManualInput.addEventListener('input', (e) => {
     if (val > peak) { val = peak; flexManualInput.value = peak.toFixed(2); }
     activeState.flexibleSpending = val;
     flexSlider.value = val;
+    updateSavingsTargetInput();
     saveAndSync();
 });
 
