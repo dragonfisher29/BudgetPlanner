@@ -1,90 +1,172 @@
-// Grab DOM elements
-const form = document.getElementById('budget-form');
-const descriptionInput = document.getElementById('description');
-const amountInput = document.getElementById('amount');
-const typeInput = document.getElementById('type');
+// Dom Selectors
+const currencySelect = document.getElementById('currency-select');
+const monthlyBudgetInput = document.getElementById('monthly-budget');
+const fixedExpenseForm = document.getElementById('fixed-expense-form');
+const fixedDesc = document.getElementById('fixed-desc');
+const fixedAmount = document.getElementById('fixed-amount');
+
+const flexSlider = document.getElementById('flex-slider');
+const flexManualInput = document.getElementById('flex-manual-input'); // New Selector
+const sliderMaxText = document.getElementById('slider-max-text');
+
+const totalBudgetEl = document.getElementById('total-budget');
+const totalExpensesEl = document.getElementById('total-expenses');
+const netSavingsEl = document.getElementById('net-savings');
 const transactionList = document.getElementById('transaction-list');
 
-const totalIncomeEl = document.getElementById('total-income');
-const totalExpensesEl = document.getElementById('total-expenses');
-const netBalanceEl = document.getElementById('net-balance');
+// App State Storage (Hydrated via LocalStorage)
+let appState = JSON.parse(localStorage.getItem('budget_planner_state')) || {
+    currency: '$',
+    monthlyBudget: 0,
+    fixedExpenses: [],
+    flexibleSpending: 0
+};
 
-// Load transactions from localStorage or initialize empty array
-let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-
-// Update the Dashboard Numbers
-function updateDashboard() {
-    const income = transactions
-        .filter(t => t.type === 'income')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-    const expenses = transactions
-        .filter(t => t.type === 'expense')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-    const balance = income - expenses;
-
-    totalIncomeEl.innerText = `$${income.toFixed(2)}`;
-    totalExpensesEl.innerText = `$${expenses.toFixed(2)}`;
-    netBalanceEl.innerText = `$${balance.toFixed(2)}`;
+// Initialize configuration elements from saved states
+function loadSavedState() {
+    currencySelect.value = appState.currency;
+    monthlyBudgetInput.value = appState.monthlyBudget;
     
-    // Change balance color if negative
-    netBalanceEl.style.color = balance < 0 ? '#e74c3c' : '#3498db';
+    // Initial dynamic math adjustments
+    adjustSliderMaxCap();
+    
+    // Ensure the loaded flexible spending value doesn't exceed the newly calculated cap
+    if (appState.flexibleSpending > parseFloat(flexSlider.max)) {
+        appState.flexibleSpending = parseFloat(flexSlider.max);
+    }
+    
+    flexSlider.value = appState.flexibleSpending;
+    flexManualInput.value = appState.flexibleSpending > 0 ? appState.flexibleSpending.toFixed(2) : "";
+    
+    updateUI();
 }
 
-// Render Transactions in the Table
-function renderTransactions() {
+// Dynamically scale slider maximum ceiling to remaining pool after fixed expenses
+function adjustSliderMaxCap() {
+    const budget = parseFloat(appState.monthlyBudget) || 0;
+    const totalFixed = appState.fixedExpenses.reduce((sum, item) => sum + item.amount, 0);
+    
+    // Calculate remaining headroom
+    const remainingBalance = budget - totalFixed;
+    const maxCap = remainingBalance > 0 ? remainingBalance : 0;
+    
+    flexSlider.max = maxCap;
+    flexManualInput.max = maxCap; // Restrict manual field ceiling too
+    sliderMaxText.innerText = maxCap.toFixed(2);
+
+    // Safety fallback: if spending exceeds the new dynamic max cap, push it down
+    if (parseFloat(appState.flexibleSpending) > maxCap) {
+        appState.flexibleSpending = maxCap;
+        flexSlider.value = maxCap;
+        flexManualInput.value = maxCap > 0 ? maxCap.toFixed(2) : "";
+    }
+}
+
+// Render Totals and Calculate Net Residual Savings
+function updateUI() {
+    const selectedCurrency = appState.currency;
+    
+    // Update structural currency text icons dynamically across elements
+    document.querySelectorAll('.currency').forEach(el => el.innerText = selectedCurrency);
+
+    // Calculate aggregations
+    const budgetAmount = parseFloat(appState.monthlyBudget) || 0;
+    const totalFixed = appState.fixedExpenses.reduce((sum, item) => sum + item.amount, 0);
+    const totalFlexible = parseFloat(appState.flexibleSpending) || 0;
+    
+    const totalCombinedExpenses = totalFixed + totalFlexible;
+    const netSavings = budgetAmount - totalCombinedExpenses;
+
+    // Display updates on Cards
+    totalBudgetEl.innerHTML = `<span class="currency">${selectedCurrency}</span>${budgetAmount.toFixed(2)}`;
+    totalExpensesEl.innerHTML = `<span class="currency">${selectedCurrency}</span>${totalCombinedExpenses.toFixed(2)}`;
+    netSavingsEl.innerHTML = `<span class="currency">${selectedCurrency}</span>${netSavings.toFixed(2)}`;
+
+    // Visual indicator optimization for debt/negative savings margin shifts
+    netSavingsEl.style.color = netSavings < 0 ? 'var(--expense-color)' : 'var(--savings-color)';
+
+    renderFixedExpensesTable();
+}
+
+// Render out structural table components
+function renderFixedExpensesTable() {
     transactionList.innerHTML = '';
-
-    transactions.forEach((transaction, index) => {
+    appState.fixedExpenses.forEach((expense, index) => {
         const row = document.createElement('tr');
-        row.classList.add(transaction.type === 'income' ? 'inc-row' : 'exp-row');
-
         row.innerHTML = `
-            <td>${transaction.description}</td>
-            <td>${transaction.type.toUpperCase()}</td>
-            <td>$${transaction.amount.toFixed(2)}</td>
-            <td><button class="delete-btn" onclick="deleteTransaction(${index})">X</button></td>
+            <td>${expense.description}</td>
+            <td style="color: var(--expense-color); font-weight:600;">FIXED</td>
+            <td>${appState.currency}${expense.amount.toFixed(2)}</td>
+            <td><button class="delete-btn" onclick="deleteFixedExpense(${index})">✕</button></td>
         `;
-
         transactionList.appendChild(row);
     });
 }
 
-// Add Transaction
-form.addEventListener('submit', (e) => {
-    e.preventDefault();
+// --- Event Listeners & Input Pipeline Actions ---
 
-    const transaction = {
-        description: descriptionInput.value,
-        amount: parseFloat(amountInput.value),
-        type: typeInput.value
-    };
-
-    transactions.push(transaction);
-    updateLocalStorage();
-    init();
-
-    // Reset Form
-    form.reset();
+// Currency adjustment event hook
+currencySelect.addEventListener('change', (e) => {
+    appState.currency = e.target.value;
+    saveAndSync();
 });
 
-// Delete Transaction
-window.deleteTransaction = function(index) {
-    transactions.splice(index, 1);
-    updateLocalStorage();
-    init();
+// Primary Budget tracking value adjustment
+monthlyBudgetInput.addEventListener('input', (e) => {
+    appState.monthlyBudget = parseFloat(e.target.value) || 0;
+    adjustSliderMaxCap(); 
+    saveAndSync();
+});
+
+// 1. SLIDER INPUT: Updates manual field
+flexSlider.addEventListener('input', (e) => {
+    const value = parseFloat(e.target.value) || 0;
+    appState.flexibleSpending = value;
+    flexManualInput.value = value.toFixed(2); // Keep manual input box matching
+    saveAndSync();
+});
+
+// 2. MANUAL NUMERIC INPUT: Updates slider handle position
+flexManualInput.addEventListener('input', (e) => {
+    let value = parseFloat(e.target.value) || 0;
+    const maxAllowed = parseFloat(flexSlider.max);
+
+    // Hard ceiling defense block
+    if (value > maxAllowed) {
+        value = maxAllowed;
+        flexManualInput.value = maxAllowed.toFixed(2);
+    }
+
+    appState.flexibleSpending = value;
+    flexSlider.value = value; // Force slider to snap to manual entry location
+    saveAndSync();
+});
+
+// Add Fixed expense structure handler
+fixedExpenseForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const expense = {
+        description: fixedDesc.value,
+        amount: parseFloat(fixedAmount.value) || 0
+    };
+    appState.fixedExpenses.push(expense);
+    fixedExpenseForm.reset();
+    adjustSliderMaxCap(); 
+    saveAndSync();
+});
+
+// Delete individual tracking component array indexes
+window.deleteFixedExpense = function(index) {
+    appState.fixedExpenses.splice(index, 1);
+    adjustSliderMaxCap(); 
+    saveAndSync();
+};
+
+// Global persistence sync logic block 
+function saveAndSync() {
+    localStorage.setItem('budget_planner_state', JSON.stringify(appState));
+    updateUI();
 }
 
-// Update LocalStorage
-function updateLocalStorage() {
-    localStorage.setItem('transactions', JSON.stringify(transactions));
-}
-
-// Initialize App
-function init() {
-    renderTransactions();
-    updateDashboard();
-}
-
-init();
+// Runtime bootstrapping sequence trigger
+loadSavedState();

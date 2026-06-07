@@ -2,7 +2,7 @@
     --bg-color: #f4f7f6;
     --card-bg: #ffffff;
     --text-color: #333;
-    --income-color: #2ecc71;
+    --savings-color: #2ecc71;
     --expense-color: #e74c3c;
     --primary-color: #3498db;
 }
@@ -16,18 +16,27 @@ body {
 }
 
 .container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
 }
 
-h1 {
-    text-align: center;
-    color: #2c3e50;
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.currency-container select {
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 1rem;
 }
 
 .dashboard {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 20px;
     margin-bottom: 30px;
 }
@@ -36,66 +45,147 @@ h1 {
     background: var(--card-bg);
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     text-align: center;
 }
 
-.card.income p { color: var(--income-color); font-size: 1.5rem; font-weight: bold; }
-.card.expenses p { color: var(--expense-color); font-size: 1.5rem; font-weight: bold; }
-.card.balance p { color: var(--primary-color); font-size: 1.5rem; font-weight: bold; }
+.card.budget p { color: var(--primary-color); font-size: 1.8rem; font-weight: bold; }
+.card.expenses p { color: var(--expense-color); font-size: 1.8rem; font-weight: bold; }
+.card.savings p { color: var(--savings-color); font-size: 1.8rem; font-weight: bold; }
+
+.grid-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
 
 .form-container, .history-container {
     background: var(--card-bg);
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
-form {
+.form-submit-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.input-group {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    flex-direction: column;
+    margin-bottom: 15px;
 }
 
-form input, form select, form button {
-    flex: 1;
-    min-width: 150px;
+.input-group label, form label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.input-group input, .inline-inputs input {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    font-size: 1rem;
 }
 
-form button {
+.inline-inputs {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+}
+
+.inline-inputs input[type="text"] { flex: 2; min-width: 0; }
+.inline-inputs input[type="number"] { flex: 1; min-width: 0; }
+.inline-inputs button {
+    flex: initial;
+    white-space: nowrap; /* Keeps "Add" text on a single line */
+}
+@media (max-width: 480px) {
+    .inline-inputs {
+        flex-direction: column;
+    }
+}
+
+button {
     background: var(--primary-color);
     color: white;
     border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
 }
 
-form button:hover {
-    background: #2980b9;
-}
+button:hover { background: #2980b9; }
 
-table {
+/* Slider Styling */
+.slider-box {
+    margin-top: 15px;
+}
+.slider-display {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0;
+    color: #555;
+}
+input[type="range"] {
     width: 100%;
-    border-collapse: collapse;
+    margin: 15px 0;
+}
+.slider-range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #777;
 }
 
-th, td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+.hint { font-size: 0.85rem; color: #777; margin-top: -5px; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 10px;}
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+.delete-btn { background: none; border: none; color: var(--expense-color); cursor: pointer; }
+
+/* Styling for the new manual flexible input */
+.slider-display-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin: 10px 0;
 }
 
-.inc-row { color: var(--income-color); }
-.exp-row { color: var(--expense-color); }
-
-.delete-btn {
-    background: none;
-    border: none;
-    color: var(--expense-color);
-    cursor: pointer;
+#flex-manual-input {
+    font-size: 1.8rem;
     font-weight: bold;
+    color: #555;
+    width: 160px;
+    text-align: center;
+    border: 1px dashed #ccc;
+    background: transparent;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+#flex-manual-input:focus {
+    outline: none;
+    border: 1px solid var(--primary-color);
+    background: #fff;
+}
+
+/* Hide standard number input arrows for a cleaner dashboard look */
+#flex-manual-input::-webkit-outer-spin-button,
+#flex-manual-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+#flex-manual-input[type=number] {
+    -moz-appearance: textfield;
 }
