@@ -3,27 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Budget Planner</title>
+    <title>Ultimate Static Budget Planner</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Budget Planner</h1>
-            <!-- Currency Switcher -->
-            <div class="currency-container">
-                <label for="currency-select">Currency: </label>
-                <select id="currency-select">
-                    <option value="$">USD ($)</option>
-                    <option value="€">EUR (€)</option>
-                    <option value="£">GBP (£)</option>
-                    <option value="¥">JPY (¥)</option>
-                    <option value="RM">MYR (RM)</option>
+            <div class="brand">
+                <h1>Budget Planner</h1>
+                <select id="profile-select" title="Switch Budget Profile">
+                    <option value="default">Default Profile</option>
+                    <option value="holiday">Holiday Planning</option>
+                    <option value="summer">Summer Vacation</option>
                 </select>
+            </div>
+            
+            <div class="header-controls">
+                <button id="export-btn" class="util-btn" title="Export Backup File">📤 Export</button>
+                <label for="import-file" class="util-btn" title="Import Backup File">📥 Import</label>
+                <input type="file" id="import-file" accept=".json" style="display: none;">
+
+                <button id="theme-toggle" class="util-btn" aria-label="Toggle dark/light theme">🌙</button>
+
+                <div class="currency-container">
+                    <select id="currency-select">
+                        <option value="$">USD ($)</option>
+                        <option value="€">EUR (€)</option>
+                        <option value="£">GBP (£)</option>
+                        <option value="¥">JPY (¥)</option>
+                        <option value="RM">MYR (RM)</option>
+                    </select>
+                </div>
             </div>
         </header>
         
-        <!-- Dashboard Balance Cards -->
         <div class="dashboard">
             <div class="card budget">
                 <h3>Monthly Budget</h3>
@@ -39,63 +53,74 @@
             </div>
         </div>
 
-        <!-- Inputs Section -->
-        <div class="grid-inputs">
-            <!-- Set Initial Budget & Fixed Expenses -->
-            <div class="form-container">
-                <h3>1. Base Setup</h3>
-                <div class="input-group">
-                    <label for="monthly-budget">Monthly Budget Allocation</label>
-                    <input type="number" id="monthly-budget" placeholder="e.g. 3000" value="0" step="0.01">
-                </div>
-                
-                <form id="fixed-expense-form">
-                    <label>Add Fixed Expense (Rent, Bills, etc.)</label>
-                    <div class="inline-inputs">
-                        <input type="text" id="fixed-desc" placeholder="Rent" required>
-                        <input type="number" id="fixed-amount" placeholder="Amount" step="0.01" required>
+        <div class="main-layout-grid">
+            
+            <div class="input-sidebar">
+                <div class="form-container">
+                    <h3>1. Base Setup</h3>
+                    <div class="input-group">
+                        <label for="monthly-budget">Monthly Budget Allocation</label>
+                        <input type="number" id="monthly-budget" placeholder="e.g. 3000" value="0" step="0.01">
                     </div>
-                    <button type="submit">Add</button>
-                </form>
+                    
+                    <form id="fixed-expense-form">
+                        <label>Add Fixed Expense (Rent, Bills, etc.)</label>
+                        <div class="inline-inputs">
+                            <input type="text" id="fixed-desc" placeholder="Rent" required>
+                            <input type="number" id="fixed-amount" placeholder="Amount" step="0.01" required>
+                            <input type="number" id="fixed-date" placeholder="Day (1-31)" min="1" max="31" required>
+                        </div>
+                        <button type="submit" class="form-submit-btn">Add Fixed Expense</button>
+                    </form>
+                </div>
+
+                <div class="form-container">
+                    <h3>2. Flexible Expenses</h3>
+                    <p class="hint">Adjust your planned spending for fun, dining, shopping, etc.</p>
+                    <div class="slider-box">
+                        <label for="flex-slider">Flexible Spending Limit:</label>
+            
+                        <div class="slider-display-container">
+                            <span class="currency">$</span>
+                            <input type="number" id="flex-manual-input" min="0" step="0.01" placeholder="0.00">
+                        </div>
+            
+                        <input type="range" id="flex-slider" min="0" max="2000" value="0" step="1">
+                        <div class="slider-range-labels">
+                            <span>Min: <span class="currency">$</span>0</span>
+                            <span>Max Cap: <span class="currency">$</span><span id="slider-max-text">2000</span></span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Flexible Expenses Slider Control -->
-            <div class="form-container">
-                <h3>2. Flexible Expenses</h3>
-                <p class="hint">Adjust your planned spending for fun, dining, shopping, etc.</p>
-                <div class="slider-box">
-                    <label for="flex-slider">Flexible Spending Limit:</label>
-        
-                    <div class="slider-display-container">
-                        <span class="currency">$</span>
-                        <input type="number" id="flex-manual-input" min="0" step="0.01" placeholder="0.00">
-                    </div>
-        
-                    <input type="range" id="flex-slider" min="0" max="2000" value="0" step="1">
-                    <div class="slider-range-labels">
-                        <span>Min: <span class="currency">$</span>0</span>
-                        <span>Max Cap: <span class="currency">$</span><span id="slider-max-text">2000</span></span>
-                    </div>
+            <div class="chart-panel form-container">
+                <h3>Expense Allocation Breakdown</h3>
+                <div class="chart-wrapper">
+                    <canvas id="expenseChart"></canvas>
                 </div>
             </div>
+
         </div>
 
-        <!-- History & Breakdown Breakdown -->
         <div class="history-container">
-            <h3>Fixed Expenses Breakdown</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Description</th>
-                        <th>Type</th>
-                        <th>Amount</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="transaction-list">
-                    <!-- Fixed expense rows dynamically go here -->
-                </tbody>
-            </table>
+            <h3>Fixed Expenses Breakdown Ledger</h3>
+            <div class="responsive-table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Due Day</th>
+                            <th>Description</th>
+                            <th>Classification</th>
+                            <th>Amount</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transaction-list">
+                        </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

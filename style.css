@@ -1,10 +1,22 @@
 :root {
     --bg-color: #f4f7f6;
     --card-bg: #ffffff;
-    --text-color: #333;
+    --text-color: #333333;
+    --border-color: #dddddd;
     --savings-color: #2ecc71;
     --expense-color: #e74c3c;
     --primary-color: #3498db;
+    --header-text: #2c3e50;
+}
+
+/* Feature 5: Dark Theme Mapping Assignments Override */
+body.dark-theme {
+    --bg-color: #1a1a24;
+    --card-bg: #242432;
+    --text-color: #e0e0e0;
+    --border-color: #3d3d52;
+    --header-text: #ffffff;
+    --primary-color: #5dade2;
 }
 
 body {
@@ -13,10 +25,11 @@ body {
     color: var(--text-color);
     margin: 0;
     padding: 20px;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
-    max-width: 900px;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
@@ -25,18 +38,48 @@ header {
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    margin-bottom: 20px;
+    gap: 15px;
+    margin-bottom: 25px;
 }
 
-.currency-container select {
-    padding: 8px;
-    border-radius: 4px;
-    font-size: 1rem;
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
+
+h1 { margin: 0; color: var(--header-text); }
+
+#profile-select, .currency-container select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.util-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+.util-btn:hover { background: var(--border-color); }
 
 .dashboard {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
     margin-bottom: 30px;
 }
@@ -45,34 +88,58 @@ header {
     background: var(--card-bg);
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
     text-align: center;
+    transition: background-color 0.3s ease;
 }
 
-.card.budget p { color: var(--primary-color); font-size: 1.8rem; font-weight: bold; }
-.card.expenses p { color: var(--expense-color); font-size: 1.8rem; font-weight: bold; }
-.card.savings p { color: var(--savings-color); font-size: 1.8rem; font-weight: bold; }
+.card.budget p { color: var(--primary-color); font-size: 1.8rem; font-weight: bold; margin: 10px 0 0 0; }
+.card.expenses p { color: var(--expense-color); font-size: 1.8rem; font-weight: bold; margin: 10px 0 0 0; }
+.card.savings p { color: var(--savings-color); font-size: 1.8rem; font-weight: bold; margin: 10px 0 0 0; }
 
-.grid-inputs {
+/* Structural Split Grid Layout */
+.main-layout-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 20px;
     margin-bottom: 30px;
+}
+
+@media (max-width: 768px) {
+    .main-layout-grid { grid-template-columns: 1fr; }
 }
 
 .form-container, .history-container {
     background: var(--card-bg);
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    margin-bottom: 20px;
+}
+
+.chart-panel {
+    display: flex;
+    flex-direction: column;
+}
+.chart-wrapper {
+    position: relative;
+    margin: auto;
+    width: 100%;
+    max-width: 280px;
 }
 
 .form-submit-btn {
     width: 100%;
     padding: 12px;
     font-size: 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
     cursor: pointer;
 }
+.form-submit-btn:hover { opacity: 0.9; }
 
 .input-group {
     display: flex;
@@ -88,14 +155,16 @@ header {
 
 .input-group input, .inline-inputs input {
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-color);
     border-radius: 4px;
     font-size: 1rem;
 }
 
 .inline-inputs {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     width: 100%;
     box-sizing: border-box;
     margin-bottom: 12px;
@@ -103,89 +172,36 @@ header {
 
 .inline-inputs input[type="text"] { flex: 2; min-width: 0; }
 .inline-inputs input[type="number"] { flex: 1; min-width: 0; }
-.inline-inputs button {
-    flex: initial;
-    white-space: nowrap; /* Keeps "Add" text on a single line */
-}
-@media (max-width: 480px) {
-    .inline-inputs {
-        flex-direction: column;
-    }
-}
 
-button {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-button:hover { background: #2980b9; }
-
-/* Slider Styling */
-.slider-box {
-    margin-top: 15px;
-}
-.slider-display {
-    font-size: 2rem;
-    font-weight: bold;
-    text-align: center;
-    margin: 10px 0;
-    color: #555;
-}
-input[type="range"] {
-    width: 100%;
-    margin: 15px 0;
-}
-.slider-range-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.85rem;
-    color: #777;
-}
-
-.hint { font-size: 0.85rem; color: #777; margin-top: -5px; }
-
-table { width: 100%; border-collapse: collapse; margin-top: 10px;}
-th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-.delete-btn { background: none; border: none; color: var(--expense-color); cursor: pointer; }
-
-/* Styling for the new manual flexible input */
-.slider-display-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-    margin: 10px 0;
-}
-
+/* Input Slider Presentation Definitions */
+.slider-box { margin-top: 15px; }
+.slider-display-container { display: flex; justify-content: center; align-items: center; gap: 5px; margin: 10px 0; }
 #flex-manual-input {
     font-size: 1.8rem;
     font-weight: bold;
-    color: #555;
+    color: var(--text-color);
     width: 160px;
     text-align: center;
-    border: 1px dashed #ccc;
+    border: 1px dashed var(--border-color);
     background: transparent;
     border-radius: 4px;
     padding: 5px;
 }
+#flex-manual-input:focus { outline: none; border-color: var(--primary-color); }
+#flex-manual-input::-webkit-outer-spin-button, #flex-manual-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+#flex-manual-input[type=number] { -moz-appearance: textfield; }
 
-#flex-manual-input:focus {
-    outline: none;
-    border: 1px solid var(--primary-color);
-    background: #fff;
-}
+input[type="range"] { width: 100%; margin: 15px 0; cursor: pointer; }
+.slider-range-labels { display: flex; justify-content: space-between; font-size: 0.85rem; color: #777; }
+.hint { font-size: 0.85rem; color: #777; margin-top: -5px; }
 
-/* Hide standard number input arrows for a cleaner dashboard look */
-#flex-manual-input::-webkit-outer-spin-button,
-#flex-manual-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-#flex-manual-input[type=number] {
-    -moz-appearance: textfield;
-}
+/* Ledger Presentation Configurations */
+.responsive-table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 500px; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
+th { font-weight: 600; color: var(--header-text); }
+.delete-btn { background: none; border: none; color: var(--expense-color); cursor: pointer; font-size: 1.1rem; }
+
+/* Feature 3: Checkbox Check-off Indicator Status Styles */
+.paid-row { text-decoration: line-through; opacity: 0.5; }
+.pay-checkbox { width: 18px; height: 18px; cursor: pointer; }
