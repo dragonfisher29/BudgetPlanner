@@ -79,16 +79,24 @@
                     <p class="hint">Adjust your planned spending for fun, dining, shopping, etc.</p>
                     <div class="slider-box">
                         <label for="flex-slider">Flexible Spending Limit:</label>
-            
+                        
                         <div class="slider-display-container">
                             <span class="currency">$</span>
                             <input type="number" id="flex-manual-input" min="0" step="0.01" placeholder="0.00">
                         </div>
-            
+                        
                         <input type="range" id="flex-slider" min="0" max="2000" value="0" step="1">
                         <div class="slider-range-labels">
                             <span>Min: <span class="currency">$</span>0</span>
                             <span>Max Cap: <span class="currency">$</span><span id="slider-max-text">2000</span></span>
+                        </div>
+
+                        <div class="savings-target-container" style="margin-top: 15px; border-top: 1px dashed var(--border-color, #ccc); padding-top: 15px;">
+                            <label for="savings-pct-input" style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 5px;">Or Set Desired Savings Target:</label>
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+                                <input type="number" id="savings-pct-input" min="0" max="100" step="0.1" placeholder="0.0" style="font-size: 1.2rem; padding: 6px; width: 80px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
+                                <span style="font-size: 1.2rem; font-weight: bold; color: #555;">%</span>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -205,3 +205,11 @@ th { font-weight: 600; color: var(--header-text); }
 /* Feature 3: Checkbox Check-off Indicator Status Styles */
 .paid-row { text-decoration: line-through; opacity: 0.5; }
 .pay-checkbox { width: 18px; height: 18px; cursor: pointer; }
+
+/* Styling for the new inline savings percentage text */
+.savings-pct {
+    font-size: 1.2rem;
+    font-weight: 500;
+    opacity: 0.85;
+    margin-left: 4px;
+}

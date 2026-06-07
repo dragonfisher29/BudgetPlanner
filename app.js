@@ -278,5 +278,39 @@ window.toggleExpensePaid = function(index) {
 function saveAndSync() { saveState(); updateUI(); }
 function saveState() { localStorage.setItem('multi_profile_engine_v3', JSON.stringify(globalBudgetEngine)); }
 
+// Render Totals and Calculate Net Residual Savings + Percentage
+function updateUI() {
+    const symbol = activeState.currency;
+    document.querySelectorAll('.currency').forEach(el => el.innerText = symbol);
+
+    const budgetAmount = parseFloat(activeState.monthlyBudget) || 0;
+    const totalFixed = activeState.fixedExpenses.reduce((sum, item) => sum + item.amount, 0);
+    const totalFlexible = parseFloat(activeState.flexibleSpending) || 0;
+    
+    const totalCombinedExpenses = totalFixed + totalFlexible;
+    const netSavings = budgetAmount - totalCombinedExpenses;
+
+    // --- CALCULATE SAVINGS PERCENTAGE ---
+    let savingsPercentage = 0;
+    if (budgetAmount > 0 && netSavings > 0) {
+        savingsPercentage = (netSavings / budgetAmount) * 100;
+    }
+
+    // Display updates on Cards
+    totalBudgetEl.innerHTML = `<span class="currency">${symbol}</span>${budgetAmount.toFixed(2)}`;
+    totalExpensesEl.innerHTML = `<span class="currency">${symbol}</span>${totalCombinedExpenses.toFixed(2)}`;
+    
+    // Injected savings value with its calculated percentage breakdown
+    netSavingsEl.innerHTML = `
+        <span class="currency">${symbol}</span>${netSavings.toFixed(2)} 
+        <span class="savings-pct">(${savingsPercentage.toFixed(1)}%)</span>
+    `;
+    
+    netSavingsEl.style.color = netSavings < 0 ? 'var(--expense-color)' : 'var(--savings-color)';
+
+    renderLedger();
+    renderCharts(totalFixed, totalFlexible, netSavings);
+}
+
 // Initialize System Engine Ecosystem Configuration Pipelines On Boot
 initEngine();
