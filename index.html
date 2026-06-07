@@ -1,1 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Budget Planner</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Smart Budget Planner</h1>
+        
+        <div class="dashboard">
+            <div class="card income">
+                <h3>Total Income</h3>
+                <p id="total-income">$0.00</p>
+            </div>
+            <div class="card expenses">
+                <h3>Total Expenses</h3>
+                <p id="total-expenses">$0.00</p>
+            </div>
+            <div class="card balance">
+                <h3>Net Balance</h3>
+                <p id="net-balance">$0.00</p>
+            </div>
+        </div>
 
+        <div class="form-container">
+            <h3>Add New Transaction</h3>
+            <form id="budget-form">
+                <input type="text" id="description" placeholder="Description (e.g., Grocery, Salary)" required>
+                <input type="number" id="amount" placeholder="Amount ($)" step="0.01" required>
+                <select id="type">
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                </select>
+                <button type="submit">Add Transaction</button>
+            </form>
+        </div>
+
+        <div class="history-container">
+            <h3>Transaction History</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="transaction-list">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
